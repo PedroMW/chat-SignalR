@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SignalR Chat</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.12/signalr.min.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>Chat SignalR</h2>
+        </div>
+        <div class="chat-messages" id="messagesList"></div>
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Nome" />
+            <input type="text" id="messageInput" placeholder="Mensagem" />
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.on("ReceiveMessage", (user, message) => {
+            const div = document.createElement("div");
+            div.className = 'message';
+            div.innerHTML = `<strong>${user}</strong>: ${message}`;
+            document.getElementById("messagesList").appendChild(div);
+            div.scrollIntoView();
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+
+        function sendMessage() {
+            const user = document.getElementById("userInput").value;
+            const message = document.getElementById("messageInput").value;
+            connection.invoke("SendMessage", user, message).catch(err => console.error(err.toString()));
+        }
+    </script>
+</body>
+</html>
